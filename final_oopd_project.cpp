@@ -7,14 +7,15 @@ using namespace std;
 
 class event
 {
-    int event_id;
+    
     string event_name;
     int event_date[3];
     float budget;
     string venue;
     static string status_opt[4];
     string status;
-
+protected:
+    int event_id;
 public:
     event();
     event(int id);
@@ -26,6 +27,7 @@ public:
 };
 
 string event::status_opt[4] = {"Started", "Discarded", "Postponed", "Completed"};
+
 event::event()
 {
     event_id = 0;
@@ -43,7 +45,7 @@ event::event(int id)
     bool run=true;
     event_id=id;
     string check;
-    string v[] = {"Grand Hall", "Riverside Pavilion", "Skyline Terrace", "Crystal Ballroom", "Garden Courtyard"};
+    string v[] = {"Grand Hall(1000)", "Riverside Pavilion(500)", "Skyline Terrace(100)", "Crystal Ballroom(1000)", "Garden Courtyard(2000)"};
     int choice;
     cout<<"Welcome to new EVENT:"<<endl;
     cout<<"Enter event name: "<<endl;
@@ -109,7 +111,6 @@ event::event(int id)
         cout << "Error opening events.csv!" << endl;
         return;
     }
-
     file << event_name << "," << event_date[0] << "/" << event_date[1] << "/" << event_date[2]
          << "," << budget << "," << venue << "," << status << "\n";
 
@@ -203,6 +204,8 @@ void Schedule::create_schedule(int event_id)
 {
     cout<<"What is the name of this Activity?"<<endl;
     cin.ignore();
+    bool ch;
+    do{
     getline(cin, activity_name[activity_count]);
     cout<<"What time will the activity Start?(HH:MM)"<<endl;
     cin>>start_time[activity_count];
@@ -210,8 +213,10 @@ void Schedule::create_schedule(int event_id)
     cin>>end_time[activity_count];
     if(!validate_schedule(start_time[activity_count], end_time[activity_count]))
     {
-        return;
+        ch=true;
     }
+    else ch=false;
+    }while(ch==true);
     status[activity_count] = "Scheduled";
     activity_count++;
 }
@@ -240,10 +245,19 @@ void Schedule::update_schedule(int event_id)
     case 2:
         cout<<"Enter new Start Time: "<<endl;
         cin>>start_time[check];
+        if(!validate_schedule(start_time[activity_count], end_time[activity_count]))
+        {
+            return;
+        }
         break;
+        
     case 3:
         cout<<"Enter new End Time: "<<endl;
         cin>>end_time[check];
+        if(!validate_schedule(start_time[activity_count], end_time[activity_count]))
+        {
+            return;
+        }
         break;
     case 4:
         cout<<"Update Status: "<<endl;
@@ -308,6 +322,7 @@ class Task : public Schedule
 };
 string Task::priority[3] = {"High Priority", "Medium Priority", "Low Priority"};
 string Task::status[4] = {"Started", "Discarded", "Postponed", "Completed"};
+
 void Task::assign_task()
 {
     cout << "Enter Details of task: " << endl;
@@ -327,17 +342,21 @@ void Task::assign_task()
     }
     cin >> pri;
     
-    if (pri >= 1 && pri <= 3) {
+    if (pri >= 1 && pri <= 3) 
+    {
         stat = priority[pri-1];
         cout << "Task assigned with " << stat << endl;
-    } else {
+    } 
+    else 
+    {
         cout << "Invalid priority. Setting to Medium Priority by default." << endl;
         stat = priority[1];
     }
 }
 void Task::track_progress()
 {
-    if (task_name.empty()) {
+    if (task_name.empty()) 
+    {
         cout << "No task assigned yet!" << endl;
         return;
     }
@@ -349,7 +368,8 @@ void Task::track_progress()
 }
 void Task::mark_complete()
 {
-    if (task_name.empty()) {
+    if (task_name.empty()) 
+    {
         cout << "No task assigned yet!" << endl;
         return;
     }
@@ -404,7 +424,8 @@ public:
     
     void confirm_service()
     {
-        if (name == "No data yet") {
+        if (name == "No data yet") 
+        {
             cout << "No vendor data available. Please add vendor details first." << endl;
             return;
         }
@@ -459,7 +480,7 @@ class BudgetManager:public event
     void track_overspending(float cost, float ideal_cost);
 
     public:
-    BudgetManager(int id, float budget); // Modified constructor
+    BudgetManager(int id, float budget); 
     void track_expenses();
     void print_budget();
 };
@@ -533,60 +554,49 @@ void BudgetManager::print_budget()
 class feedback:public event 
 {
 private:
-    string feedback_id, event_id, client_id, client_rating, comment, suggestion;    
+    string comment, suggestion;  
+    float rating,feedback_id;
 
 public:
-    void collect_feedback()
-    {    
-        cout << "Enter Feedback ID: ";     
-        cin >> feedback_id;     
-        cout << "Enter Event ID: ";      
-        cin >> event_id;    
-        cout << "Enter Client ID: ";    
-        cin >> client_id;    
-        cout << "Enter Client Rating: ";   
-        cin >> client_rating;    
+    void collect_feedback(int id)
+    {   feedback_id=id;
+        cout << "Enter Rating(out of 10): ";   
+        cin >> rating;   
         cout << "Enter Comment: ";   
         cin.ignore();
         getline(cin, comment);     
         cout << "Enter Suggestion: ";  
         getline(cin, suggestion);    
-
-        cout << "Feedback Collected from Client: " << client_id << endl;      
+        cout << "Feedback Collected!" << endl;      
     }
 
     void generate_summary()
     {      
-        if (feedback_id.empty()) {
+        if (feedback_id==event_id) 
+        {
+            cout << "Feedback Summary:" << endl;  
+            cout << "Rating: " << rating << endl;    
+            cout << "Comment: " << comment << endl;    
+            cout << "Suggestion: " << suggestion << endl; 
+        }
+        else
+        {
             cout << "No feedback collected yet." << endl;
             return;
         }
         
-        cout << "Feedback Summary:" << endl;  
-        cout << "Event ID: " << event_id << endl;     
-        cout << "Client ID: " << client_id << endl;    
-        cout << "Rating: " << client_rating << endl;    
-        cout << "Comment: " << comment << endl;    
-        cout << "Suggestion: " << suggestion << endl;      
+             
     }
 };
 
 int main() 
 {
     vector<event> events;
-    vector<Schedule> schedules;
-    vector<Task> tasks;
-    vector<vendor> vendors;
-    vector<Client> clients;
-    vector<BudgetManager> budgets;
-    vector<feedback> feedbacks;
-    
     int choice, ch, event_id = 1;
     bool check = true;
 
     cout << "\nWelcome to the Event Management System!" << endl;
     
-    // Display existing events at startup if any
     if(ifstream("events.csv")) 
     {
         event::print_event();
@@ -600,37 +610,13 @@ int main()
         cout << "3. Exit System" << endl;
         cout << "Enter your choice: ";
         cin >> choice;
-
         switch (choice) 
         {
             case 1:
                 {
                     events.push_back(event(event_id));
-                    
-                    // Get the budget from the last added event
                     float event_budget = events.back().get_budget();
-                    budgets.push_back(BudgetManager(event_id, event_budget));
-                    
-                    // Add a new schedule, task, and vendor for this event
-                    schedules.push_back(Schedule());
-                    tasks.push_back(Task());
-                    vendors.push_back(vendor());
-                    
-                    // Create a new client for the event
-                    Client new_client;
-                    cout << "Do you want to add client details? (1 for yes, 0 for no): ";
-                    int add_client;
-                    cin >> add_client;
-                    if (add_client == 1) 
-                    {
-                        cin.ignore(); 
-                        new_client.addClient();
-                    }
-                    clients.push_back(new_client);
-                    
-                    // Create feedback object for the event
-                    feedbacks.push_back(feedback());
-                    
+                    BudgetManager budgetMgr(event_id, event_budget);
                     cout << "Event created with ID: " << event_id << endl;
                     event_id++;
                 }
@@ -655,7 +641,7 @@ int main()
                         // Check if the number entered is correct
                         if (id > 0 && id <= events.size()) 
                         {
-                            id--; // Convert to 0-based index
+                            id--;
                             valid_id = true;
                         } 
                         else 
@@ -663,6 +649,13 @@ int main()
                             cout << "Invalid event number! Please try again.\n";
                         }
                     }
+                    Schedule schedule;
+                    Task task;
+                    vendor vendorObj;
+                    Client client;
+                    feedback feedbackObj;
+                    float event_budget = events[id].get_budget();
+                    BudgetManager budgetMgr(id+1, event_budget);
 
                     bool event_menu = true;
                     while (event_menu) {
@@ -699,10 +692,10 @@ int main()
                                     switch(budget_choice) 
                                     {
                                         case 1:
-                                            budgets[id].track_expenses();
+                                            budgetMgr.track_expenses();
                                             break;
                                         case 2:
-                                            budgets[id].print_budget();
+                                            budgetMgr.print_budget();
                                             break;
                                         default:
                                             cout << "Invalid choice!" << endl;
@@ -722,13 +715,13 @@ int main()
                                     switch(sched_choice) 
                                     {
                                         case 1:
-                                            schedules[id].create_schedule(id + 1);
+                                            schedule.create_schedule(id + 1);
                                             break;
                                         case 2:
-                                            schedules[id].update_schedule(id + 1);
+                                            schedule.update_schedule(id + 1);
                                             break;
                                         case 3:
-                                            schedules[id].print_schedule();
+                                            schedule.print_schedule();
                                             break;
                                         default:
                                             cout << "Invalid choice!" << endl;
@@ -748,13 +741,13 @@ int main()
                                     switch(task_choice) 
                                     {
                                         case 1:
-                                            tasks[id].assign_task();
+                                            task.assign_task();
                                             break;
                                         case 2:
-                                            tasks[id].track_progress();
+                                            task.track_progress();
                                             break;
                                         case 3:
-                                            tasks[id].mark_complete();
+                                            task.mark_complete();
                                             break;
                                         default:
                                             cout << "Invalid choice!" << endl;
@@ -770,17 +763,16 @@ int main()
                                     cout << "3. Confirm vendor service" << endl;
                                     cout << "Enter choice: ";
                                     cin >> vend_choice;
-
                                     switch(vend_choice) 
                                     {
                                         case 1:
-                                            vendors[id].getdata();
+                                            vendorObj.getdata();
                                             break;
                                         case 2:
-                                            vendors[id].display_info();
+                                            vendorObj.display_info();
                                             break;
                                         case 3:
-                                            vendors[id].confirm_service();
+                                            vendorObj.confirm_service();
                                             break;
                                         default:
                                             cout << "Invalid choice!" << endl;
@@ -800,10 +792,10 @@ int main()
                                     {
                                         case 1:
                                             cin.ignore();
-                                            clients[id].addClient();
+                                            client.addClient();
                                             break;
                                         case 2:
-                                            clients[id].displayClient();
+                                            client.displayClient();
                                             break;
                                         default:
                                             cout << "Invalid choice!" << endl;
@@ -818,14 +810,13 @@ int main()
                                     cout << "2. View feedback summary" << endl;
                                     cout << "Enter choice: ";
                                     cin >> feedback_choice;
-
                                     switch(feedback_choice) 
                                     {
                                         case 1:
-                                            feedbacks[id].collect_feedback();
+                                            feedbackObj.collect_feedback(id);
                                             break;
                                         case 2:
-                                            feedbacks[id].generate_summary();
+                                            feedbackObj.generate_summary();
                                             break;
                                         default:
                                             cout << "Invalid choice!" << endl;
